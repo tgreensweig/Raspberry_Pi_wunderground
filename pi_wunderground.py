@@ -41,16 +41,19 @@ while(True):
   humidity = float(matches.group(1))
 
   # upload data to Wunderground
-  conn = httplib.HTTPConnection("rtupdate.wunderground.com")
-  path = "/weatherstation/updateweatherstation.php?ID=" + stationid + "&PASSWORD=" + password + "&dateutc=" + str(datetime.utcnow()) + "&tempf=" + str(temp) + "&humidity=" + str(humidity) + "&softwaretype=RaspberryPi&action=updateraw"
-  conn.request("GET", path)
-  res = conn.getresponse()
+  try:
+        conn = httplib.HTTPConnection("rtupdate.wunderground.com")
+        path = "/weatherstation/updateweatherstation.php?ID=" + stationid + "&PASSWORD=" + password + "&dateutc=" + str(datetime.utcnow()) + "&tempf=" + str(temp) + "&humidity=" + str(humidity) + "&softwaretype=RaspberryPi&action=updateraw"
+        conn.request("GET", path)
+        res = conn.getresponse()
 
-  # checks whether there was a successful connection (HTTP code 200 and content of page contains "success")
-  if ((int(res.status) == 200) & ("success" in res.read())): 
-	print "%s - Successful Upload\nTemp: %.1f F, Humidity: %.1f %%\nNext upload in %i seconds\n" % (str(datetime.now()), temp, humidity, delay)
-  else:
-	print "%s -- Upload not successful, will try again in %i seconds" % (str(datetime.now()), delay) 
+        # checks whether there was a successful connection (HTTP code 200 and content of page contains "success")
+        if ((int(res.status) == 200) & ("success" in res.read())):
+                print "%s - Successful Upload\nTemp: %.1f F, Humidity: %.1f %%\nNext upload in %i seconds\n" % (str(datetime.now()), temp, humidity, delay)
+        else:
+                print "%s -- Upload not successful, check username, password, and formating.. Will try again in %i seconds" % (str(datetime.now()), delay)
+  except IOError as e: #in case of any kind of socket error
+        print "{0} -- I/O error({1}): {2} will try again in {3} seconds".format(datetime.now(), e.errno, e.strerror, delay)
 
   # Wait before re-uploading data
   time.sleep(delay)
